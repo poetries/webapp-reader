@@ -1,0 +1,5 @@
+@import "base64";
+
+@mixin icon-base64($iconUrl) {
+  background: url($iconUrl);
+}
