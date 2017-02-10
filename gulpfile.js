@@ -45,7 +45,7 @@ gulp.task('js:dev', () => {
     	.pipe(babel({
 		      	 	presets: ['es2015']
      			})) //ES6转ES5
-        //.pipe(concat('all.js')) 开发阶段分开输出js文件
+        .pipe(concat('all.js')) 
         .pipe(gulp.dest('dist/js/'))
         .pipe(reload({ stream: true }))
 });
@@ -55,6 +55,12 @@ gulp.task('js:dev', () => {
 gulp.task('html:dev', () => {
     gulp.src('src/tpl/*.html')
         .pipe(gulp.dest('dist'))
+});
+
+// data.json
+gulp.task('json:dev', () => {
+    gulp.src('src/data/*.json')
+        .pipe(gulp.dest('dist/data'))
 });
 
 
@@ -67,7 +73,7 @@ gulp.task('lib:dev', () => {
 
 
 //开发构建
-gulp.task('dev', ['css:dev', 'js:dev', 'html:dev', 'img','copyFonts','lib:dev'], () => {
+gulp.task('dev', ['css:dev', 'js:dev', 'html:dev', 'img','copyFonts','lib:dev','json:dev'], () => {
     browserSync.init({
         server: {
             baseDir: "dist" // 设置服务器的根目录为dist目录
@@ -82,6 +88,7 @@ gulp.task('dev', ['css:dev', 'js:dev', 'html:dev', 'img','copyFonts','lib:dev'],
     gulp.watch('src/fonts/**', ['copyFonts']);
     gulp.watch('src/images/**', ['img']);
     gulp.watch('src/lib/**', ['lib:dev']);
+    gulp.watch('src/lib/**', ['json:dev']);
 });
 
 

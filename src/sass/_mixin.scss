@@ -3,3 +3,13 @@
 @mixin icon-base64($iconUrl) {
   background: url($iconUrl);
 }
+@mixin bgColor($position, $bottom, $height) {
+  position: $position;
+  bottom: $bottom;
+  height: $height;
+}
+@mixin icon-text($pos, $top, $fz) {
+  position: $pos;
+  top: $top;
+  font-size: $fz;
+}

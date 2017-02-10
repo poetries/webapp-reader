@@ -9,36 +9,65 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="container">
+    <div class="m-article-action">
+        <div class="article-action-mid" id="action-mid"></div>
+    </div>
     <div class="chapter-title" id="chapter_title"></div>
-    <div class="top-nav">
+    <div class="top-nav" id="top_nav" style="display: none">
         <div class="icon-back"></div>
         <div class="nav-title">返回书架</div>
     </div>
     <div class="chapter-content" id="chapter_content">
-        <h4>@poetries</h4>
-        <p>
-            不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，
-            把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载
-        </p>
-        <p>
-            不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，
-            把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载
-        </p>
-        <p>
-            不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，
-            把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载
-        </p>
-        <p>
-            不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，
-            把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载不要用大文件加载了，把图片等数据上传到七牛，加快加载
-        </p>
+
     </div>
     <div class="m-btn">
         <ul class="m-btn-tab">
-            <li class="m-btn-prev m-btn-comm">上一章</li>
-            <li class="m-btn-next m-btn-comm">下一章</li>
+            <li class="m-btn-prev m-btn-comm" id="prev_button">上一章</li>
+            <li class="m-btn-next m-btn-comm" id="next_button">下一章</li>
         </ul>
+    </div>
+    <!-- 底部导航 -->
+    <div class="bottom-nav-bg bottom_nav"  style="display: none"></div>
+    <div class="bottom-nav bottom_nav" style="display: none">
+        <div class="item" id="menu_button">
+            <div class="item-wrap">
+                <span class="icon-menu"></span>
+                <span class="icon-text">目录</span>
+            </div>
+        </div>
+        <div class="item" id="font_button">
+            <div class="item-wrap">
+                <span class="icon-ft"></span>
+                <span class="icon-text">字体</span>
+            </div>
+        </div>
+        <div class="item" id="night_day_button">
+            <div class="item-wrap">
+                <span class="icon-day"></span>
+                <span class="icon-text" style="display: none;">白天</span>
+            </div>
+            <div class="item-wrap">
+                <span class="icon-night"></span>
+                <span class="icon-text" >夜间</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部面板 -->
+    <div class="nav-pannel-bg nav_pannel_bg" style="display: none">
+    <div class="nav-pannel nav_pannel_bg" style="display: none">
+        <div class="child-mod">
+            <span>字号</span>
+            <button id="large-font" class="btn-font">大</button>
+            <button id="small-font" class="btn-font">小</button>
+        </div>
+        <div class="child-mod">
+            <span>背景</span>
+            <div class="bg-container">
+                <div class="bg-container-curr"></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -47,8 +76,9 @@
 
 
     <script src="lib/zepto.min.js"></script>
+    <script>window.jQuery = $;</script>
     <script src="lib/jquery.base64.js"></script>
     <script src="lib/jquery.jsonp.js"></script>
-    <script src="lib/reader.js"></script>
+    <script src="js/all.js"></script>
 </body>
 </html>
