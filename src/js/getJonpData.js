@@ -16,3 +16,5 @@ let getJsonpData = (() => {
         getData
     };
 })();
+
+export {getJsonpData};

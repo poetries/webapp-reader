@@ -1,3 +1,5 @@
+import {storage} from './storage.js';
+import {getJonpData} from './getJonpData.js';
 
 // 对使用多次的变量进行缓存 提升性能
 const DOM = {
@@ -10,20 +12,6 @@ const DOM = {
     doc: $(document)
 };
 
-// localstorage只能存字符串
-let Storage = (() => {
-    let prefix = 'h5_reader_'; //在localStorage前加前缀为了防止误操作删除数据
-    let StorageGetter = (key) => {
-        return localStorage.getItem(prefix + key);
-    };
-    let StorageSetter = (key, val) => {
-        return localStorage.setItem(prefix + key,val);
-    };
-    return {
-        StorageGetter: StorageGetter,
-        StorageSetter: StorageSetter
-    };
-})();
 
 // 初始化 对localStorage进行取值
 // localstorage只能存字符串 取得时候去字符串
@@ -42,20 +30,54 @@ let readerModule = () => {
     let Chapter_id;
     let chapterTotal;
     let init = (UIcallback) => {
+        /**
         getChapterInfo(() => {
             getCurrChapterContent(Chapter_id, (data) => {
                 UIcallback && UIcallback(data);
             });
+        });**/
+        // Promise 改善
+        getChapterInfoPromise().then((d) => {
+            return getCurrChapterContentPromise();
+        }).then((data) => {
+            UIcallback && UIcallback(data);
         });
     };
+    /**
     let getChapterInfo = (callback) => {
       $.get('/data/chapter.json',(data) => {
             // todo获取信息的回调
-          Chapter_id = data.chapters[1].chapter_id;
+          Chapter_id = Storage.StorageGetter('last_chapter_id');
+          if (Chapter_id == null) {
+              Chapter_id = data.chapters[1].chapter_id;
+          }
           chapterTotal = data.chapters[1].length;
           callback && callback();
       }, 'json');
+    };**/
+
+    // Promise改善异步回调操作
+    let getChapterInfoPromise = () => {
+        return new Promise((resolve, reject) => {
+             $.get('/data/chapter.json',(data) => {
+                // todo获取信息的回调
+                if (data.result == 0) { // 成功的时候
+                    Chapter_id = Storage.StorageGetter('last_chapter_id');
+                    if (Chapter_id == null) {
+                        Chapter_id = data.chapters[1].chapter_id;
+                    }
+                    chapterTotal = data.chapters[1].length;
+                    resolve();
+                } else { // fail
+                    reject();
+                }
+
+            }, 'json');
+        });
     };
+
+
+    /**
     let getCurrChapterContent = (chapter_id,callback) => {
       $.get('data/data' + Chapter_id + '.json', (data) => {
           if (data.result == 0) {
@@ -64,7 +86,23 @@ let readerModule = () => {
                   callback && callback(data);
               });
           }
-      }, 'json')
+      }, 'json');
+    };**/
+
+    // Promise改善异步回调操作
+    let getCurrChapterContentPromise = () => {
+        return new Promise((resolve, reject) => {
+             $.get('data/data' + Chapter_id + '.json', (data) => {
+                if (data.result == 0) {
+                    let url = data.jsonp;
+                    getJonpData.getData(url, () => {
+                        resolve(data);
+                    });
+                } else {
+                    reject({msg:'fail'});
+                }
+            }, 'json');
+        });
     };
     let prevChapter = (UIcallback) => {
         Chapter_id = parseInt(Chapter_id,10);
@@ -72,7 +110,8 @@ let readerModule = () => {
             return;
         }
         Chapter_id -= 1;
-        getCurrChapterContent(cid, UIcallback)
+        getCurrChapterContent(cid, UIcallback);
+        storage.StorageSetter('last_chapter_id',Chapter_id);
     };
     let nextChapter = (UIcallback) => {
         Chapter_id = parseInt(Chapter_id,10);
@@ -80,7 +119,8 @@ let readerModule = () => {
             return;
         }
         Chapter_id += 1;
-        getCurrChapterContent(cid, UIcallback)
+        getCurrChapterContent(cid, UIcallback);
+        Storage.StorageSetter('last_chapter_id',Chapter_id);
     };
     return { // 暴露接口
         init,
@@ -156,7 +196,9 @@ let eventHandle = () => {
     });
     $("#prev_button").click(() => {
        //todo获得章节的翻页数据 把数据拿来渲染
-       readerModule().prevChapter();
+       readerModule().prevChapter((data) => {
+           readerUI(data);
+       });
     });
     $("#next_button").click(() => {
         readerModule().nextChapter((data) => {
@@ -165,4 +207,8 @@ let eventHandle = () => {
     });
 };
 
-
+export default{
+    eventHandle,
+    readerBaseStruct,
+    readerModule
+};

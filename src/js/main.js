@@ -1,13 +1,12 @@
 // main entry
-let readerModule;
-let readerUI;
+import app from './app.js';
+
 let entry = () => {
-    eventHandle();
-    readerUI = readerBaseStruct(chapter_content);
-    readerModule = readerModule();
-    readerModule.init((data) => {
+    app.eventHandle();
+    let readerUI = app.readerBaseStruct(chapter_content);
+    app.readerModule().init((data) => {
         readerUI(data);
     });
-    readerBaseStruct();
+    app.readerBaseStruct();
 };
 entry();

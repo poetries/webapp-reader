@@ -13,3 +13,4 @@ let Storage = (() => {
     };
 })();
 
+export  {Storage};
