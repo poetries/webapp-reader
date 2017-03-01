@@ -1,8 +1,7 @@
-import {storage} from './storage.js';
-import {getJonpData} from './getJonpData.js';
 
-// 对使用多次的变量进行缓存 提升性能
-const DOM = {
+// ================== 对使用多次的变量进行缓存 提升性能
+
+var DOM = {
     top_nav: $("#top_nav"),
     bottom_nav: $(".bottom_nav"),
     nav_pannel_bg: $(".nav_pannel_bg"),
@@ -11,148 +10,155 @@ const DOM = {
     win: $(window),
     doc: $(document)
 };
+var ReaderModule;
+var readerUI;
+
+// ============= 工具函数
+
+var Util = (function(){
+    'use strict';
+    var prefix = 'h5_reader_'; //在localStorage前加前缀为了防止误操作删除数据
+    var StorageGetter = function(key) {
+        return localStorage.getItem(prefix + key);
+    };
+    var StorageSetter = function(key, val) {
+        return localStorage.setItem(prefix + key,val);
+    };
+    // 数据解密
+    var getData = function(url, callback) {
+        return $.jsonp({
+            url: url,
+            cache: true,
+            callback: 'duokan_fiction_chapter', //duokan_fiction_chapter 回调函数名
+            success: function(result){
+                //debugger
+                var data = $.base64.decode(result);// base64对返回的数据进行解码
+                var json = decodeURIComponent(escape(data));
+                callback(json);
+            }
+        });
+    };
+    return {
+        StorageGetter: StorageGetter,
+        StorageSetter: StorageSetter,
+        getData: getData
+    };
+})();
 
 
-// 初始化 对localStorage进行取值
-// localstorage只能存字符串 取得时候去字符串
-let initFontSize = parseInt(Storage.StorageGetter('font_size'));
+
+// ======== 初始化 对localStorage进行取值 localstorage只能存字符串 取得时候去字符串
+var initFontSize = parseInt(Util.StorageGetter('font_size'));
 
 if (!initFontSize) {
     initFontSize = 14;
 }
-
 DOM.chapter_content.css("font-size",initFontSize);
 
 
+// ============= 入口
+function main() {
+    ReaderModule = readerModule();
+    readerUI =  readerBaseStruct(DOM.chapter_content);
+    ReaderModule.init(function(data) {
+        readerUI(data);
+    });
+    eventHandle();
+}
 
-// 实现和阅读器相关的数据交互
-let readerModule = () => {
-    let Chapter_id;
-    let chapterTotal;
-    let init = (UIcallback) => {
-        /**
-        getChapterInfo(() => {
-            getCurrChapterContent(Chapter_id, (data) => {
+
+// ====================== 实现和阅读器相关的数据交互(数据层)
+var readerModule = function() {
+    var Chapter_id;
+    var chapterTotal;
+    var Fiction_id = 'id_';
+    var init = function(UIcallback) {
+        getChapterInfo(function () {
+            getCurrChapterContent(Chapter_id, function(data) {
                 UIcallback && UIcallback(data);
             });
-        });**/
-        // Promise 改善
-        getChapterInfoPromise().then((d) => {
-            return getCurrChapterContentPromise();
-        }).then((data) => {
-            UIcallback && UIcallback(data);
         });
-    };
-    /**
-    let getChapterInfo = (callback) => {
-      $.get('/data/chapter.json',(data) => {
-            // todo获取信息的回调
-          Chapter_id = Storage.StorageGetter('last_chapter_id');
+    }
+    // 获得章节信息
+    var getChapterInfo = function(callback) {
+      $.get('data/chapter.json',function(data) {
+            // 获取信息的回调
+          Chapter_id = Util.StorageGetter(Fiction_id+'last_chapter_id');
+
           if (Chapter_id == null) {
               Chapter_id = data.chapters[1].chapter_id;
           }
           chapterTotal = data.chapters[1].length;
           callback && callback();
       }, 'json');
-    };**/
-
-    // Promise改善异步回调操作
-    let getChapterInfoPromise = () => {
-        return new Promise((resolve, reject) => {
-             $.get('/data/chapter.json',(data) => {
-                // todo获取信息的回调
-                if (data.result == 0) { // 成功的时候
-                    Chapter_id = Storage.StorageGetter('last_chapter_id');
-                    if (Chapter_id == null) {
-                        Chapter_id = data.chapters[1].chapter_id;
-                    }
-                    chapterTotal = data.chapters[1].length;
-                    resolve();
-                } else { // fail
-                    reject();
-                }
-
-            }, 'json');
-        });
     };
+    // 获得章节内容
+    var getCurrChapterContent = function(chapter_id,callback) {
 
-
-    /**
-    let getCurrChapterContent = (chapter_id,callback) => {
-      $.get('data/data' + Chapter_id + '.json', (data) => {
+      $.get('data/data' + chapter_id + '.json', function(data) {
           if (data.result == 0) {
-              let url = data.jsonp;
-              getJsonpData.getData(url, () => {
+              var url = data.jsonp;
+              Util.getData(url, function(data) {
                   callback && callback(data);
               });
           }
       }, 'json');
-    };**/
-
-    // Promise改善异步回调操作
-    let getCurrChapterContentPromise = () => {
-        return new Promise((resolve, reject) => {
-             $.get('data/data' + Chapter_id + '.json', (data) => {
-                if (data.result == 0) {
-                    let url = data.jsonp;
-                    getJonpData.getData(url, () => {
-                        resolve(data);
-                    });
-                } else {
-                    reject({msg:'fail'});
-                }
-            }, 'json');
-        });
     };
-    let prevChapter = (UIcallback) => {
+
+    // 上一章
+    var prevChapter = function(UIcallback) {
         Chapter_id = parseInt(Chapter_id,10);
         if (Chapter_id == 0) {
-            return;
+            return false;
         }
         Chapter_id -= 1;
-        getCurrChapterContent(cid, UIcallback);
-        storage.StorageSetter('last_chapter_id',Chapter_id);
+        getCurrChapterContent(Chapter_id, UIcallback);
+        Util.StorageSetter(Fiction_id+'last_chapter_id',Chapter_id);
     };
-    let nextChapter = (UIcallback) => {
+
+    // 下一章
+    var nextChapter = function(UIcallback) {
         Chapter_id = parseInt(Chapter_id,10);
         if (Chapter_id == chapterTotal) {
-            return;
+           return false;
         }
+
         Chapter_id += 1;
-        getCurrChapterContent(cid, UIcallback);
-        Storage.StorageSetter('last_chapter_id',Chapter_id);
+        getCurrChapterContent(Chapter_id, UIcallback);
+       Util.StorageSetter(Fiction_id+'last_chapter_id',Chapter_id);
     };
-    return { // 暴露接口
-        init,
-        prevChapter,
-        nextChapter
+    return {
+        init: init,
+        prevChapter: prevChapter,
+        nextChapter: nextChapter
     }
 };
 
-// 渲染基本的UI结构
-let readerBaseStruct = (container) => {
-    let parseChapterData = (jsonData) => {
-      let json = JSON.parse(jsonData);
-      let html = '<h4>' + json.t + '</h4>';
+// ========================= 渲染基本的UI结构（UI层）
+var readerBaseStruct = function(container) {
+    var parseChapterData = function(jsonData) {
+      var jsonObj = JSON.parse(jsonData);
+      var html = '<h4>' + jsonObj.t + '</h4>';
 
-      for (var i = 0; i < json.p.length; i++) {
-        html +='<p>' + json.p[i] + '</p>';
+      for (var i = 0; i < jsonObj.p.length; i++) {
+        html +='<p>' + jsonObj.p[i] + '</p>';
       }
         return html;
     };
-    return (data) => {
+    return function(data) {
         container.html(parseChapterData(data));
     };
 };
 
-// 交互的事件绑定
-let eventHandle = () => {
-    let hideShowStatus = () => {
+// ========================== 交互的事件绑定（事件）
+var eventHandle = function() {
+
+    var hideShowStatus = function() {
         DOM.nav_pannel_bg.hide();
         DOM.font_button.find(".item-wrap").removeClass("current");
     };
 
-    $("#action-mid").click(() => {
+    $("#action-mid").click(function() {
        if (DOM.top_nav.css('display') == 'none') {
             DOM.top_nav.show();
             DOM.bottom_nav.show();
@@ -162,7 +168,7 @@ let eventHandle = () => {
             hideShowStatus();
        }
     });
-    DOM.font_button.click(() => {
+    DOM.font_button.click(function() {
         if (DOM.nav_pannel_bg.css('display') == 'none') {
             DOM.nav_pannel_bg.show();
             DOM.font_button.find(".item-wrap").addClass("current");
@@ -170,16 +176,16 @@ let eventHandle = () => {
             hideShowStatus();
         }
     });
-    $("#night_day_button").click(() => {
+    $("#night_day_button").click(function() {
         //todo触发背景切换的事件
     });
-    $("#large-font").click(() => {
+    $("#large-font").click(function() {
         if (initFontSize >= 20) {
             return;
         }
         initFontSize +=1;
         DOM.chapter_content.css("font-size",initFontSize+'px');
-        Storage.StorageSetter('font_size',initFontSize);
+        Util.StorageSetter('font_size',initFontSize);
     });
     $("#small-font").click(() => {
         if (initFontSize <= 12){
@@ -187,28 +193,28 @@ let eventHandle = () => {
         }
         initFontSize -=1;
         DOM.chapter_content.css("font-size",initFontSize+'px');
-        Storage.StorageSetter('font_size',initFontSize);
+        Util.StorageSetter('font_size',initFontSize);
     });
-    DOM.win.scroll(() => {
+    DOM.win.scroll(function() {
         DOM.top_nav.hide();
         DOM.bottom_nav.hide();
         hideShowStatus();
     });
-    $("#prev_button").click(() => {
+    $("#prev_button").click(function() {
        //todo获得章节的翻页数据 把数据拿来渲染
-       readerModule().prevChapter((data) => {
+        ReaderModule.prevChapter(function(data) {
            readerUI(data);
+
        });
     });
-    $("#next_button").click(() => {
-        readerModule().nextChapter((data) => {
+    $("#next_button").click(function() {
+        ReaderModule.nextChapter(function(data) {
             readerUI(data);
         });
     });
+    $('#menu_button').click(function() {
+        location.href = '#';
+    });
 };
 
-export default{
-    eventHandle,
-    readerBaseStruct,
-    readerModule
-};
+main();
