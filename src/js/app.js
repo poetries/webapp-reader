@@ -8,10 +8,12 @@ var DOM = {
     font_button: $("#font_button"),
     chapter_content: $("#chapter_content"),
     win: $(window),
-    doc: $(document)
+    doc: $(document),
+    rootContainer: $("body")
 };
 var ReaderModule;
 var readerUI;
+var mark = true;
 
 // ============= 工具函数
 
@@ -47,15 +49,20 @@ var Util = (function(){
 
 
 
-// ======== 初始化 对localStorage进行取值 localstorage只能存字符串 取得时候去字符串
-var initFontSize = parseInt(Util.StorageGetter('font_size'));
+// ======================  从缓存中读取的信息进行展示
 
+
+// 字体设置信息初始化 对localStorage进行取值
+var initFontSize = parseInt(Util.StorageGetter('font_size'));
 if (!initFontSize) {
     initFontSize = 14;
 }
 DOM.chapter_content.css("font-size",initFontSize);
 
-
+var bgColor = Util.StorageGetter('background_color');
+if (bgColor) {
+    DOM.rootContainer.css("background",bgColor);
+}
 // ============= 入口
 function main() {
     ReaderModule = readerModule();
@@ -99,8 +106,10 @@ var readerModule = function() {
           if (data.result == 0) {
               var url = data.jsonp;
               Util.getData(url, function(data) {
+                  $('#init_loading').hide();
                   callback && callback(data);
               });
+             // $("#m-btn-tab").css("display","none");
           }
       }, 'json');
     };
@@ -176,8 +185,33 @@ var eventHandle = function() {
             hideShowStatus();
         }
     });
+
     $("#night_day_button").click(function() {
-        //todo触发背景切换的事件
+
+      if(mark) {
+          $("#icon-day").show();
+          $("#icon-text-day").show();
+          $("html").css("background","#0f1410");
+          $("#icon-night").hide();
+          $("#icon-text-night").hide();
+      } else {
+          $("#icon-day").hide();
+          $("#icon-text-day").hide();
+          $("#icon-night").show();
+          $("#icon-text-night").show();
+          $("html").css("background","#fff");
+      }
+        mark = !mark;
+
+    });
+    $(".item").click(function() {
+        $(this).addClass("active").siblings().removeClass("active");
+    });
+    $(".item").click(function () {
+        var bg = $(this).css("background");
+        DOM.rootContainer.css("background",bg);
+        Util.StorageSetter('background_color', bg);
+        console.log(Util.StorageGetter('background_color'))
     });
     $("#large-font").click(function() {
         if (initFontSize >= 20) {
@@ -212,8 +246,8 @@ var eventHandle = function() {
             readerUI(data);
         });
     });
-    $('#menu_button').click(function() {
-        location.href = '#';
+    $('.icon-back').click(function() {
+        location.href = 'https://github.com/poetries/webapp-reader';
     });
 };
 

@@ -122,7 +122,6 @@
         background-size: contain;
       }
       .icon-day {
-        display: none;
         width: 19px;
         height: 18px;
         @include icon-base64($icon-day);
@@ -169,23 +168,42 @@
       outline: none;
     }
     .bg-container {
-      position: relative;
-      width: 30px;
-      height: 30px;
       display: inline-block;
-      border-radius: 15px;
-      background: #fff;
-      vertical-align: -14px;
-      .bg-container-curr {
-        position: absolute;
-        top: -2px;
-        left: -2px;
+      .item {
+        position: relative;
+        width: 30px;
+        height: 30px;
         display: inline-block;
-        width: 32px;
-        height: 32px;
-        border-radius: 16px;
-        border: 1px #ff7800 solid;
+        border-radius: 15px;
+        background: #fff;
+        vertical-align: -14px;
+        margin-left: 10px;
+        &.active {
+          display: inline-block;
+          border-radius: 16px;
+          border: 1px #ff7800 solid;
+        }
+        &.item-1 {
+          background: #f7eee5;
+        }
+        &.item-2 {
+          background: #e9dfc7;
+        }
+        &.item-3 {
+          background: #a4a4a4;
+        }
+        &.item-4 {
+          background: #cdefce;
+        }
+        &.item-5 {
+          background: #283548;
+        }
+        &.item-6 {
+          background: #0f1410;
+        }
+
       }
+
     }
   }
 }
@@ -195,4 +213,29 @@
   z-index: 10002;
   width: 100%;
   height: 40%;
+}
+.loading {
+  position: fixed;
+  text-align: center;
+  width: 100%;
+  top: 40%;
+  color: #fff;
+  z-index: 199999;
+}
+.loading-icon {
+  margin: 0 auto;
+  margin-top: 50%;
+  width: 20px;
+  height: 20px;
+  @include icon-base64($icon-loading)
+}
+.loading-mask {
+  text-align: center;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0.1;
+  position: fixed;
+  top: 0px;
 }
