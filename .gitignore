@@ -1,7 +1,0 @@
-node_modules/
-dist/
-src/css
-**/.map
-npm-debug.log
-src/js-es6-bak
-
