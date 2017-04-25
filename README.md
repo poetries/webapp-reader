@@ -9,6 +9,15 @@
 - JavaScript
 - Gulp
 
+Usage
+---
+
+```
+npm install #安装依赖
+npm run dev #项目开发环境
+npm run build #项目构建上线
+npm run zip  #文件打包备份
+``` 
 
 
 演示
